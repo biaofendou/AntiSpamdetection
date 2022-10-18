@@ -1,13 +1,13 @@
 #!/bin/bash
 # YOLOv5 🚀 by Ultralytics, GPL-3.0 license
 # Download COCO 2017 dataset http://cocodataset.org
-# Example usage: bash data/scripts/get_coco.sh
+# Example usage: bash valid/scripts/get_coco.sh
 # parent
 # ├── yolov5
 # └── datasets
 #     └── coco  ← downloads here
 
-# Arguments (optional) Usage: bash data/scripts/get_coco.sh --train --val --test --segments
+# Arguments (optional) Usage: bash valid/scripts/get_coco.sh --train --val --test --segments
 if [ "$#" -gt 0 ]; then
   for opt in "$@"; do
     case "${opt}" in

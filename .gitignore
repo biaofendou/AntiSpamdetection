@@ -34,7 +34,9 @@ data/images/*
 !data/images/zidane.jpg
 !data/images/bus.jpg
 !data/*.sh
-
+data/train/images
+data/train/labels
+data/train/antispam.yaml
 results*.csv
 
 # Datasets -------------------------------------------------------------------------------------------------------------

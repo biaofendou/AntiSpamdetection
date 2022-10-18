@@ -1,36 +1,95 @@
-import re  #为了正则表达式
-import requests#请求网页url
-import os #操作系统
-num=0    #给图片名字加数字
-header={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36',
-        'Cookie':'',#这里需要大家根据自己的浏览器情况自行填写
-        'Accept':'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-        'Accept-Encoding':'gzip, deflate, br',
-        'Accept-Language':'zh-CN,zh;q=0.9'
-        }  #请求头，谷歌浏览器里面有，具体在哪里找到详见我上一条csdn博客
-#图片页面的url
-url='https://image.baidu.com/search/index?tn=baiduimage&ipn=r&ct=201326592&cl=2&lm=-1&st=-1&sf=1&fmq=&pv=&ic=0&nc=1&z=&se=1&showtab=0&fb=0&width=&height=&face=0&istype=2&ie=utf-8&fm=index&pos=history&word=%E5%A4%B4%E5%83%8F'
-#通过requests库请求到了页面
-html=requests.get(url,headers=header)
-#防止乱码
-html.encoding='utf8'
-#打印页面出来看看
-print(html.text)
+# -*- coding: utf-8 -*-
+"""
+ Created on 2021/4/19 11:47
+ Filename   : spider_image_baidu.py
+ Author     : Taosy
+ Zhihu      : https://www.zhihu.com/people/1105936347
+ Github     : https://github.com/AFei19911012
+ Description: Spider - get images from baidu
+"""
 
-html=html.text
-pachong_picture_path= ''
-if not os.path.exists(pachong_picture_path):
-    os.mkdir(pachong_picture_path)
+import requests
+import os
+import re
 
 
+def get_images_from_baidu(keyword, page_num, save_dir):
+    # UA 伪装：当前爬取信息伪装成浏览器
+    # 将 User-Agent 封装到一个字典中
+    # 【（网页右键 → 审查元素）或者 F12】 → 【Network】 → 【Ctrl+R】 → 左边选一项，右边在 【Response Hearders】 里查找
+    header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'}
+    # 请求的 url
+    url = 'https://image.baidu.com/search/acjson?'
+    n = 0
+    for pn in range(0, 30 * page_num, 30):
+        # 请求参数
+        param = {'tn': 'resultjson_com',
+                 # 'logid': '7603311155072595725',
+                 'ipn': 'rj',
+                 'ct': 201326592,
+                 'is': '',
+                 'fp': 'result',
+                 'queryWord': keyword,
+                 'cl': 2,
+                 'lm': -1,
+                 'ie': 'utf-8',
+                 'oe': 'utf-8',
+                 'adpicid': '',
+                 'st': -1,
+                 'z': '',
+                 'ic': '',
+                 'hd': '',
+                 'latest': '',
+                 'copyright': '',
+                 'word': keyword,
+                 's': '',
+                 'se': '',
+                 'tab': '',
+                 'width': '',
+                 'height': '',
+                 'face': 0,
+                 'istype': 2,
+                 'qc': '',
+                 'nc': '1',
+                 'fr': '',
+                 'expermode': '',
+                 'force': '',
+                 'cg': '',    # 这个参数没公开，但是不可少
+                 'pn': pn,    # 显示：30-60-90
+                 'rn': '30',  # 每页显示 30 条
+                 'gsm': '1e',
+                 '1618827096642': ''
+                 }
+        request = requests.get(url=url, headers=header, params=param)
+        if request.status_code == 200:
+            print('Request success.')
+        request.encoding = 'utf-8'
+        # 正则方式提取图片链接
+        html = request.text
+        image_url_list = re.findall('"thumbURL":"(.*?)",', html, re.S)
+        print(image_url_list)
+        # # 换一种方式
+        # request_dict = request.json()
+        # info_list = request_dict['valid']
+        # # 看它的值最后多了一个，删除掉
+        # info_list.pop()
+        # image_url_list = []
+        # for info in info_list:
+        #     image_url_list.append(info['thumbURL'])
 
-res=re.findall('"objURL":"(.*?)"',html)  #正则表达式，筛选出html页面中符合条件的图片源代码地址url
-for i in res:   #遍历
-    num=num+1       #数字加1，这样图片名字就不会重复了
-    picture=requests.get(i)       #得到每一张图片的大图
-    file_name='../data/earphone/'+str(num)+".jpg"   #给下载下来的图片命名。加数字，是为了名字不重复
-    f=open(file_name,"wb")    #以二进制写入的方式打开图片
-    f.write(picture.content)   # 往图片里写入爬下来的图片内容，content是写入内容的意思
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
 
-    print(i)    #看看有哪些url
-f.close()      #结束f文件操作
+        for image_url in image_url_list:
+            image_data = requests.get(url=image_url, headers=header).content
+            with open(os.path.join(save_dir, f'{n:06d}.jpg'), 'wb') as fp:
+                fp.write(image_data)
+            n = n + 1
+
+
+if __name__ == '__main__':
+    keyword = '人戴AirPods'
+    save_dir = '../data/AirPods'
+    page_num = 1000
+    get_images_from_baidu(keyword, page_num, save_dir)
+    print('Get images finished.')

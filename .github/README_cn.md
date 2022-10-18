@@ -116,7 +116,7 @@ python detect.py --source 0  # 网络摄像头
 数据集结果. [模型](https://github.com/ultralytics/yolov5/tree/master/models) 和 [数据集](https://github.com/ultralytics/yolov5/tree/master/data) 自动从最新的YOLOv5 [版本](https://github.com/ultralytics/yolov5/releases) 中下载。YOLOv5n/s/m/l/x的训练时间在V100 GPU上是 1/2/4/6/8天（多GPU倍速）. 尽可能使用最大的 `--batch-size`, 或通过 `--batch-size -1` 来实现 YOLOv5 [自动批处理](https://github.com/ultralytics/yolov5/pull/5092). 批量大小显示为 V100-16GB。
 
 ```bash
-python train.py --data coco.yaml --cfg yolov5n.yaml --weights '' --batch-size 128
+python train.py --valid coco.yaml --cfg yolov5n.yaml --weights '' --batch-size 128
                                        yolov5s                                64
                                        yolov5m                                40
                                        yolov5l                                24
@@ -287,23 +287,23 @@ YOLOv5分类训练支持自动下载MNIST, Fashion-MNIST, CIFAR10, CIFAR100, Ima
 
 ```bash
 # 单GPU
-python classify/train.py --model yolov5s-cls.pt --data cifar100 --epochs 5 --img 224 --batch 128
+python classify/train.py --model yolov5s-cls.pt --valid cifar100 --epochs 5 --img 224 --batch 128
 
 # 多-GPU DDP
-python -m torch.distributed.run --nproc_per_node 4 --master_port 1 classify/train.py --model yolov5s-cls.pt --data imagenet --epochs 5 --img 224 --device 0,1,2,3
+python -m torch.distributed.run --nproc_per_node 4 --master_port 1 classify/train.py --model yolov5s-cls.pt --valid imagenet --epochs 5 --img 224 --device 0,1,2,3
 ```
 
 ### 验证
 在ImageNet-1k数据集上验证YOLOv5m-cl的准确性:
 ```bash
-bash data/scripts/get_imagenet.sh --val  # download ImageNet val split (6.3G, 50000 images)
-python classify/val.py --weights yolov5m-cls.pt --data ../datasets/imagenet --img 224  # validate
+bash valid/scripts/get_imagenet.sh --val  # download ImageNet val split (6.3G, 50000 images)
+python classify/val.py --weights yolov5m-cls.pt --valid ../datasets/imagenet --img 224  # validate
 ```
 
 ### 预测
 用提前训练好的YOLOv5s-cls.pt去预测bus.jpg:
 ```bash
-python classify/predict.py --weights yolov5s-cls.pt --data data/images/bus.jpg
+python classify/predict.py --weights yolov5s-cls.pt --valid valid/images/bus.jpg
 ```
 ```python
 model = torch.hub.load('ultralytics/yolov5', 'custom', 'yolov5s-cls.pt')  # load from PyTorch Hub
